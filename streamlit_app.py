@@ -54,18 +54,18 @@ h1, h2, h3, h4 { color: var(--fg); letter-spacing: -0.02em; }
 .hero {
     padding: 24px 28px;
     border-radius: 18px;
-    background: radial-gradient(1200px 600px at 0% 0%, #f0f7f7 0%, #ffffff 50%) ,
-                            radial-gradient(900px 500px at 100% 0%, #f6f6f6 0%, #ffffff 55%);
-    border: 1px solid var(--border);
+    background: #0a0a0a;
+    border: 1px solid #0a0a0a;
     box-shadow: var(--shadow);
 }
 
 .hero h1 {
     margin-bottom: 4px;
+    color: #ffffff;
 }
 
 .hero p {
-    color: var(--muted);
+    color: #ffffff;
     margin: 0;
 }
 
@@ -183,6 +183,16 @@ button[kind] *,
 [data-testid="stFileUploader"] * {
     color: var(--fg);
 }
+
+/* File uploader dropzone text */
+[data-testid="stFileUploaderDropzone"] * {
+    color: #ffffff !important;
+}
+
+[data-testid="stFileUploaderDropzone"] {
+    background: #0a0a0a !important;
+    border-color: #0a0a0a !important;
+}
 </style>
 """,
     unsafe_allow_html=True,
@@ -196,10 +206,10 @@ MODEL_PATH = ROOT_DIR / "models" / "MobileNetV2_hypertuned_final.tflite"
 
 CLASS_NAMES = [
     "Tomato___Bacterial_spot",
-    "Tomato___healthy",
     "Tomato___Late_blight",
     "Tomato___Septoria_leaf_spot",
     "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+    "Tomato___healthy",
 ]
 
 
