@@ -1,4 +1,5 @@
 from pathlib import Path
+import time
 
 import numpy as np
 from PIL import Image
@@ -37,6 +38,13 @@ html, body, [data-testid="stAppViewContainer"] {
     font-family: 'Space Grotesk', system-ui, -apple-system, Segoe UI, sans-serif;
 }
 
+/* Slimmer centered content */
+[data-testid="stAppViewContainer"] .block-container {
+        max-width: 980px;
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+}
+
 h1, h2, h3, h4 { color: var(--fg); letter-spacing: -0.02em; }
 
 [data-testid="stHeader"] {
@@ -72,6 +80,37 @@ h1, h2, h3, h4 { color: var(--fg); letter-spacing: -0.02em; }
 .stButton > button:hover {
   background: var(--accent);
   border-color: var(--accent);
+}
+
+/* Ensure all buttons keep white text on dark background */
+button[kind],
+[data-testid="baseButton-secondary"],
+[data-testid="baseButton-primary"],
+.stDownloadButton > button,
+.stForm button,
+[data-testid="stFileUploader"] button {
+    background: var(--fg) !important;
+    color: var(--bg) !important;
+    border-color: var(--fg) !important;
+}
+
+button[kind]:hover,
+[data-testid="baseButton-secondary"]:hover,
+[data-testid="baseButton-primary"]:hover,
+.stDownloadButton > button:hover,
+.stForm button:hover,
+[data-testid="stFileUploader"] button:hover {
+    background: var(--accent) !important;
+    border-color: var(--accent) !important;
+}
+
+button[kind] *,
+[data-testid="baseButton-secondary"] *,
+[data-testid="baseButton-primary"] *,
+.stDownloadButton > button *,
+.stForm button *,
+[data-testid="stFileUploader"] button * {
+    color: var(--bg) !important;
 }
 
 .card {
@@ -193,6 +232,12 @@ def predict_tflite(interpreter: tf.lite.Interpreter, input_data: np.ndarray):
     return output_data[0]
 
 
+def format_label(label: str) -> str:
+    if "___" in label:
+        return label.split("___", 1)[1].replace("_", " ")
+    return label.replace("_", " ")
+
+
 # --- UI ---
 st.markdown(
         """
@@ -211,6 +256,7 @@ with st.sidebar:
     st.markdown("## Analysis Tools")
     show_top3 = st.checkbox("Show Top-3 predictions", value=True)
     show_meta = st.checkbox("Show image metadata", value=True)
+    show_chart = st.checkbox("Show confidence chart", value=True)
 
 
 labels = load_labels()
@@ -245,22 +291,35 @@ with col_right:
     if uploaded_file is None:
         st.info("Upload an image to see predictions.")
     else:
-        image = Image.open(uploaded_file)
+        if uploaded_file.size > 10 * 1024 * 1024:
+            st.error("File too large. Please upload an image under 10MB.")
+            st.stop()
+
+        try:
+            image = Image.open(uploaded_file)
+        except Exception:
+            st.error("Could not read the image. Please upload a valid JPG/PNG file.")
+            st.stop()
+
         st.image(image, caption="Uploaded Image", use_container_width=True)
 
-        input_data = preprocess_image(image, target_size=224)
-        preds = predict_tflite(interpreter, input_data)
+        with st.spinner("Analyzing image..."):
+            start_time = time.perf_counter()
+            input_data = preprocess_image(image, target_size=224)
+            preds = predict_tflite(interpreter, input_data)
+            elapsed_ms = (time.perf_counter() - start_time) * 1000.0
 
         top_idx = int(np.argmax(preds))
         top_label = labels[top_idx]
         top_conf = float(preds[top_idx])
 
         st.markdown(
-            f"<h3>Prediction: <span class='badge'>{top_label}</span></h3>",
+            f"<h3>Prediction: <span class='badge'>{format_label(top_label)}</span></h3>",
             unsafe_allow_html=True,
         )
         st.progress(min(max(top_conf, 0.0), 1.0))
         st.write(f"**Confidence:** {top_conf:.4f}")
+        st.caption(f"Inference time: {elapsed_ms:.1f} ms")
 
         st.markdown(
             """
@@ -282,7 +341,18 @@ with col_right:
             st.markdown("#### Top-3 Predictions")
             top3_idx = np.argsort(preds)[-3:][::-1]
             for rank, idx in enumerate(top3_idx, start=1):
-                st.write(f"{rank}. {labels[idx]} — {preds[idx]:.4f}")
+                st.write(f"{rank}. {format_label(labels[idx])} — {preds[idx]:.4f}")
+
+        if show_chart:
+            st.markdown("#### Confidence Chart")
+            order = np.argsort(preds)[::-1]
+            chart_labels = [format_label(labels[i]) for i in order]
+            chart_values = [float(preds[i]) for i in order]
+            chart_df = {
+                "Class": chart_labels,
+                "Confidence": chart_values,
+            }
+            st.bar_chart(chart_df, x="Class", y="Confidence")
 
         if show_meta:
             st.markdown("#### Image Metadata")
