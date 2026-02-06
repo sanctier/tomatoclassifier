@@ -298,29 +298,58 @@ with col_left:
         accept_multiple_files=False,
     )
 
+image = None
+preds = None
+elapsed_ms = None
+
+if uploaded_file is not None:
+    if uploaded_file.size > 10 * 1024 * 1024:
+        st.error("File too large. Please upload an image under 10MB.")
+        st.stop()
+
+    try:
+        image = Image.open(uploaded_file)
+    except Exception:
+        st.error("Could not read the image. Please upload a valid JPG/PNG file.")
+        st.stop()
+
+    with st.spinner("Analyzing image..."):
+        start_time = time.perf_counter()
+        input_data = preprocess_image(image, target_size=224)
+        preds = predict_tflite(interpreter, input_data)
+        elapsed_ms = (time.perf_counter() - start_time) * 1000.0
+
+with col_left:
+    if preds is not None:
+        st.markdown(
+            """
+<div class="kpi">
+    <div class="item">
+        <div class="label">Model</div>
+        <div class="value">TFLite</div>
+    </div>
+    <div class="item">
+        <div class="label">Input Size</div>
+        <div class="value">224×224</div>
+    </div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+        if show_top3:
+            st.markdown("#### Top-3 Predictions")
+            top3_idx = np.argsort(preds)[-3:][::-1]
+            for rank, idx in enumerate(top3_idx, start=1):
+                st.write(f"{rank}. {format_label(labels[idx])} — {preds[idx]:.4f}")
+
 with col_right:
     st.markdown("### Prediction")
 
     if uploaded_file is None:
         st.info("Upload an image to see predictions.")
     else:
-        if uploaded_file.size > 10 * 1024 * 1024:
-            st.error("File too large. Please upload an image under 10MB.")
-            st.stop()
-
-        try:
-            image = Image.open(uploaded_file)
-        except Exception:
-            st.error("Could not read the image. Please upload a valid JPG/PNG file.")
-            st.stop()
-
         st.image(image, caption="Uploaded Image", use_container_width=True)
-
-        with st.spinner("Analyzing image..."):
-            start_time = time.perf_counter()
-            input_data = preprocess_image(image, target_size=224)
-            preds = predict_tflite(interpreter, input_data)
-            elapsed_ms = (time.perf_counter() - start_time) * 1000.0
 
         top_idx = int(np.argmax(preds))
         top_label = labels[top_idx]
@@ -334,48 +363,22 @@ with col_right:
         st.write(f"**Confidence:** {top_conf:.4f}")
         st.caption(f"Inference time: {elapsed_ms:.1f} ms")
 
-        detail_left, detail_right = st.columns(2)
+        if show_chart:
+            st.markdown("#### Confidence Chart")
+            order = np.argsort(preds)[::-1]
+            chart_labels = [format_label(labels[i]) for i in order]
+            chart_values = [float(preds[i]) for i in order]
+            chart_df = {
+                "Class": chart_labels,
+                "Confidence": chart_values,
+            }
+            st.bar_chart(chart_df, x="Class", y="Confidence")
 
-        with detail_left:
-            st.markdown(
-                """
-<div class="kpi">
-    <div class="item">
-        <div class="label">Model</div>
-        <div class="value">TFLite</div>
-    </div>
-    <div class="item">
-        <div class="label">Input Size</div>
-        <div class="value">224×224</div>
-    </div>
-</div>
-""",
-                unsafe_allow_html=True,
-            )
-
-            if show_top3:
-                st.markdown("#### Top-3 Predictions")
-                top3_idx = np.argsort(preds)[-3:][::-1]
-                for rank, idx in enumerate(top3_idx, start=1):
-                    st.write(f"{rank}. {format_label(labels[idx])} — {preds[idx]:.4f}")
-
-        with detail_right:
-            if show_chart:
-                st.markdown("#### Confidence Chart")
-                order = np.argsort(preds)[::-1]
-                chart_labels = [format_label(labels[i]) for i in order]
-                chart_values = [float(preds[i]) for i in order]
-                chart_df = {
-                    "Class": chart_labels,
-                    "Confidence": chart_values,
-                }
-                st.bar_chart(chart_df, x="Class", y="Confidence")
-
-            if show_meta:
-                st.markdown("#### Image Metadata")
-                st.write(f"**Size:** {image.size[0]} x {image.size[1]}")
-                st.write(f"**Mode:** {image.mode}")
-                st.write(f"**Format:** {image.format}")
+        if show_meta:
+            st.markdown("#### Image Metadata")
+            st.write(f"**Size:** {image.size[0]} x {image.size[1]}")
+            st.write(f"**Mode:** {image.mode}")
+            st.write(f"**Format:** {image.format}")
 
 
 
