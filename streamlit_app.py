@@ -156,12 +156,14 @@ button[kind] *,
 }
 
 .badge {
-  display: inline-block;
+    display: inline-flex;
+    align-items: center;
   padding: 4px 10px;
   border-radius: 999px;
   background: var(--fg);
   color: var(--bg);
     font-size: 12px;
+        line-height: 1;
     font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
@@ -169,7 +171,8 @@ button[kind] *,
         display: flex;
         align-items: center;
         gap: 8px;
-        margin: 0;
+    margin: 0;
+    line-height: 1.1;
 }
 
 .muted { color: var(--muted); }
