@@ -269,7 +269,10 @@ def format_label(label: str) -> str:
 
 
 # --- UI ---
-st.markdown(
+header_left, header_right = st.columns([4, 1])
+
+with header_left:
+    st.markdown(
         """
 <div class="hero">
     <h1>Tomato Disease Classifier</h1>
@@ -277,7 +280,33 @@ st.markdown(
 </div>
 """,
         unsafe_allow_html=True,
-)
+    )
+
+with header_right:
+    st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+    show_model_info = st.button("How this model was built")
+
+if show_model_info:
+    with st.dialog("Model Build Summary"):
+        st.markdown(
+            """
+**1) Transfer Learning (MobileNetV2)**  
+We used a MobileNetV2 backbone pre-trained on ImageNet to reuse strong visual features.
+
+**2) Two-Phase Training**  
+- **Phase 1:** Base layers frozen; only the classifier head trained with a higher learning rate.  
+- **Phase 2:** All layers unfrozen; fine-tuned with a lower learning rate to adapt to tomato diseases.
+
+**3) Data Augmentation**  
+Training images were augmented (rotation, shifts, zoom, shear, flips, brightness) to improve generalization.
+
+**4) Regularization + Callbacks**  
+Dropout and L2 regularization were used, with EarlyStopping and ReduceLROnPlateau to stabilize training.
+
+**5) Hyperparameter Tuning (Optuna)**  
+Automated tuning searched for the best learning rates, dropout, L2 strength, batch size, and dense units.
+"""
+        )
 
 with st.sidebar:
     st.markdown("## Model Settings")
@@ -358,27 +387,6 @@ with col_left:
             for rank, idx in enumerate(top3_idx, start=1):
                 st.write(f"{rank}. {format_label(labels[idx])} — {preds[idx]:.4f}")
         st.markdown("</div>", unsafe_allow_html=True)
-
-st.markdown("## How This Model Was Built")
-st.markdown(
-    """
-**1) Transfer Learning (MobileNetV2)**  
-We used a MobileNetV2 backbone pre-trained on ImageNet to reuse strong visual features.
-
-**2) Two-Phase Training**  
-- **Phase 1:** Base layers frozen; only the classifier head trained with a higher learning rate.  
-- **Phase 2:** All layers unfrozen; fine-tuned with a lower learning rate to adapt to tomato diseases.
-
-**3) Data Augmentation**  
-Training images were augmented (rotation, shifts, zoom, shear, flips, brightness) to improve generalization.
-
-**4) Regularization + Callbacks**  
-Dropout and L2 regularization were used, with EarlyStopping and ReduceLROnPlateau to stabilize training.
-
-**5) Hyperparameter Tuning (Optuna)**  
-Automated tuning searched for the best learning rates, dropout, L2 strength, batch size, and dense units.
-"""
-)
 
 with col_right:
     st.markdown("### Prediction")
