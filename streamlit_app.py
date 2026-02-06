@@ -168,6 +168,10 @@ button[kind] *,
     font-size: 16px;
 }
 
+.align-after-image {
+    margin-top: 260px;
+}
+
 /* File uploader contrast */
 [data-testid="stFileUploader"] button {
     background: var(--fg) !important;
@@ -321,6 +325,7 @@ if uploaded_file is not None:
 
 with col_left:
     if preds is not None:
+        st.markdown("<div class='align-after-image'>", unsafe_allow_html=True)
         st.markdown(
             """
 <div class="kpi">
@@ -342,6 +347,7 @@ with col_left:
             top3_idx = np.argsort(preds)[-3:][::-1]
             for rank, idx in enumerate(top3_idx, start=1):
                 st.write(f"{rank}. {format_label(labels[idx])} — {preds[idx]:.4f}")
+        st.markdown("</div>", unsafe_allow_html=True)
 
 with col_right:
     st.markdown("### Prediction")
