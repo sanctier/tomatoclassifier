@@ -198,6 +198,15 @@ button[kind] *,
     background: #0a0a0a !important;
     border-color: #0a0a0a !important;
 }
+
+/* Info alert text color */
+[data-testid="stAlert"] {
+    color: #0a0a0a !important;
+}
+
+[data-testid="stAlert"] * {
+    color: #0a0a0a !important;
+}
 </style>
 """,
     unsafe_allow_html=True,
@@ -263,7 +272,7 @@ st.markdown(
         """
 <div class="hero">
     <h1>Tomato Disease Classifier</h1>
-    <p>Drop a leaf image to get an instant, high-confidence prediction.</p>
+    <p>Upload a leaf image to get high-confidence prediction (MobileNetV2 Architecture).</p>
 </div>
 """,
         unsafe_allow_html=True,
