@@ -58,6 +58,7 @@ h1, h2, h3, h4 { color: var(--fg); letter-spacing: -0.02em; }
     background: #0a0a0a;
     border: 1px solid #0a0a0a;
     box-shadow: var(--shadow);
+    min-height: 120px;
 }
 
 .hero h1 {
@@ -70,12 +71,31 @@ h1, h2, h3, h4 { color: var(--fg); letter-spacing: -0.02em; }
     margin: 0;
 }
 
+.hero-side {
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: space-between;
+}
+
+.hero-tag {
+    background: #0a0a0a;
+    color: #ffffff;
+    border: 1px solid #0a0a0a;
+    border-radius: 12px;
+    padding: 12px 14px;
+    text-align: center;
+    font-weight: 600;
+}
+
 .stButton > button {
   background: var(--fg);
   color: var(--bg);
   border: 1px solid var(--fg);
   border-radius: 10px;
-  padding: 0.5rem 1.2rem;
+    padding: 0.5rem 1.2rem;
+    min-height: 48px;
 }
 
 .stButton > button:hover {
@@ -306,8 +326,10 @@ Automated tuning searched for the best learning rates, dropout, L2 strength, bat
 
 
 with header_right:
-    st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
-    show_model_info = st.button("How this model was built")
+    st.markdown("<div class='hero-side'>", unsafe_allow_html=True)
+    show_model_info = st.button("How this model was built", use_container_width=True)
+    st.markdown("<div class='hero-tag'>Kelvin (2404900i)</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 if show_model_info:
     show_model_info_dialog()
