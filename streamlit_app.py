@@ -9,6 +9,7 @@ import tensorflow as tf
 # --- App Config ---
 st.set_page_config(
     page_title="Tomato Disease Classifier",
+    page_icon="🍅",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -18,21 +19,47 @@ st.set_page_config(
 st.markdown(
     """
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
 :root {
   --bg: #ffffff;
-  --fg: #0b0b0b;
-  --muted: #6b6b6b;
-  --accent: #0f766e;
-  --card: #f7f7f7;
-  --border: #e6e6e6;
+    --fg: #0a0a0a;
+    --muted: #666666;
+    --accent: #0b7a75;
+    --card: #f5f6f7;
+    --border: #e3e5e8;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
 }
 
 html, body, [data-testid="stAppViewContainer"] {
   background: var(--bg);
   color: var(--fg);
+    font-family: 'Space Grotesk', system-ui, -apple-system, Segoe UI, sans-serif;
 }
 
-h1, h2, h3, h4 { color: var(--fg); }
+h1, h2, h3, h4 { color: var(--fg); letter-spacing: -0.02em; }
+
+[data-testid="stHeader"] {
+    background: transparent;
+}
+
+.hero {
+    padding: 24px 28px;
+    border-radius: 18px;
+    background: radial-gradient(1200px 600px at 0% 0%, #f0f7f7 0%, #ffffff 50%) ,
+                            radial-gradient(900px 500px at 100% 0%, #f6f6f6 0%, #ffffff 55%);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+}
+
+.hero h1 {
+    margin-bottom: 4px;
+}
+
+.hero p {
+    color: var(--muted);
+    margin: 0;
+}
 
 .stButton > button {
   background: var(--fg);
@@ -52,6 +79,7 @@ h1, h2, h3, h4 { color: var(--fg); }
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 16px;
+    box-shadow: var(--shadow);
 }
 
 .badge {
@@ -60,10 +88,53 @@ h1, h2, h3, h4 { color: var(--fg); }
   border-radius: 999px;
   background: var(--fg);
   color: var(--bg);
-  font-size: 12px;
+    font-size: 12px;
+    font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 .muted { color: var(--muted); }
+
+.kpi {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.kpi .item {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 12px;
+}
+
+.kpi .label {
+    color: var(--muted);
+    font-size: 12px;
+    margin-bottom: 2px;
+}
+
+.kpi .value {
+    font-weight: 600;
+    font-size: 16px;
+}
+
+/* File uploader contrast */
+[data-testid="stFileUploader"] button {
+    background: var(--fg) !important;
+    color: var(--bg) !important;
+    border: 1px solid var(--fg) !important;
+    border-radius: 10px;
+}
+
+[data-testid="stFileUploader"] button:hover {
+    background: var(--accent) !important;
+    border-color: var(--accent) !important;
+}
+
+[data-testid="stFileUploader"] * {
+    color: var(--fg);
+}
 </style>
 """,
     unsafe_allow_html=True,
@@ -123,13 +194,19 @@ def predict_tflite(interpreter: tf.lite.Interpreter, input_data: np.ndarray):
 
 
 # --- UI ---
-st.title("Tomato Disease Classifier")
-st.caption("Upload a tomato leaf image and get predictions using your best TFLite model.")
+st.markdown(
+        """
+<div class="hero">
+    <h1>Tomato Disease Classifier</h1>
+    <p>Drop a leaf image to get an instant, high-confidence prediction.</p>
+</div>
+""",
+        unsafe_allow_html=True,
+)
 
 with st.sidebar:
     st.markdown("## Model Settings")
     st.write(f"**Model:** {MODEL_PATH.name}")
-    st.write("**Labels source:** Hardcoded")
     st.markdown("---")
     st.markdown("## Analysis Tools")
     show_top3 = st.checkbox("Show Top-3 predictions", value=True)
@@ -153,6 +230,7 @@ col_left, col_right = st.columns([1, 1])
 with col_left:
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     st.markdown("### Upload Image")
+    st.markdown("<div class='muted'>JPEG or PNG, clear leaf close-up works best.</div>", unsafe_allow_html=True)
     uploaded_file = st.file_uploader(
         "Drag and drop a tomato leaf image (JPG/PNG).",
         type=["jpg", "jpeg", "png"],
@@ -181,7 +259,24 @@ with col_right:
             f"<h3>Prediction: <span class='badge'>{top_label}</span></h3>",
             unsafe_allow_html=True,
         )
+        st.progress(min(max(top_conf, 0.0), 1.0))
         st.write(f"**Confidence:** {top_conf:.4f}")
+
+        st.markdown(
+            """
+<div class="kpi">
+    <div class="item">
+        <div class="label">Model</div>
+        <div class="value">TFLite</div>
+    </div>
+    <div class="item">
+        <div class="label">Input Size</div>
+        <div class="value">224×224</div>
+    </div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
 
         if show_top3:
             st.markdown("#### Top-3 Predictions")
@@ -200,6 +295,6 @@ with col_right:
 
 st.markdown("---")
 st.markdown(
-    "<div class='muted'>Tip: Use a clear leaf image with the disease region centered for best results.</div>",
+    "<div class='muted'>Tip: Center the disease region and avoid blurry photos for best accuracy.</div>",
     unsafe_allow_html=True,
 )
