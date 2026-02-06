@@ -282,14 +282,10 @@ with header_left:
         unsafe_allow_html=True,
     )
 
-with header_right:
-    st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
-    show_model_info = st.button("How this model was built")
-
-if show_model_info:
-    with st.dialog("Model Build Summary"):
-        st.markdown(
-            """
+@st.dialog("Model Build Summary")
+def show_model_info_dialog():
+    st.markdown(
+        """
 **1) Transfer Learning (MobileNetV2)**  
 We used a MobileNetV2 backbone pre-trained on ImageNet to reuse strong visual features.
 
@@ -306,7 +302,15 @@ Dropout and L2 regularization were used, with EarlyStopping and ReduceLROnPlatea
 **5) Hyperparameter Tuning (Optuna)**  
 Automated tuning searched for the best learning rates, dropout, L2 strength, batch size, and dense units.
 """
-        )
+    )
+
+
+with header_right:
+    st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+    show_model_info = st.button("How this model was built")
+
+if show_model_info:
+    show_model_info_dialog()
 
 with st.sidebar:
     st.markdown("## Model Settings")
