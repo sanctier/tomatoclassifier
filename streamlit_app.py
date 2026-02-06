@@ -121,6 +121,15 @@ button[kind] *,
     box-shadow: var(--shadow);
 }
 
+/* Column cards */
+[data-testid="column"] > div {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 16px;
+        box-shadow: var(--shadow);
+}
+
 .badge {
   display: inline-block;
   padding: 4px 10px;
@@ -274,7 +283,6 @@ if not labels:
 col_left, col_right = st.columns([1, 1])
 
 with col_left:
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
     st.markdown("### Upload Image")
     st.markdown("<div class='muted'>JPEG or PNG, clear leaf close-up works best.</div>", unsafe_allow_html=True)
     uploaded_file = st.file_uploader(
@@ -282,10 +290,8 @@ with col_left:
         type=["jpg", "jpeg", "png"],
         accept_multiple_files=False,
     )
-    st.markdown("</div>", unsafe_allow_html=True)
 
 with col_right:
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
     st.markdown("### Prediction")
 
     if uploaded_file is None:
@@ -360,7 +366,6 @@ with col_right:
             st.write(f"**Mode:** {image.mode}")
             st.write(f"**Format:** {image.format}")
 
-    st.markdown("</div>", unsafe_allow_html=True)
 
 
 st.markdown("---")
