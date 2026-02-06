@@ -71,7 +71,11 @@ h1, h2, h3, h4 { color: var(--fg); letter-spacing: -0.02em; }
     margin: 0;
 }
 
-.hero-side {
+.hero-side-marker {
+    display: none;
+}
+
+div[data-testid="column"]:has(.hero-side-marker) > div {
     min-height: 120px;
     display: flex;
     flex-direction: column;
@@ -326,10 +330,9 @@ Automated tuning searched for the best learning rates, dropout, L2 strength, bat
 
 
 with header_right:
-    st.markdown("<div class='hero-side'>", unsafe_allow_html=True)
+    st.markdown("<div class='hero-side-marker'></div>", unsafe_allow_html=True)
     show_model_info = st.button("How this model was built", use_container_width=True)
     st.markdown("<div class='hero-tag'>Kelvin (2404900i)</div>", unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
 
 if show_model_info:
     show_model_info_dialog()
