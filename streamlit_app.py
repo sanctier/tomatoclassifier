@@ -169,7 +169,7 @@ button[kind] *,
 }
 
 .align-after-image {
-    margin-top: 260px;
+    margin-top: 300px;
 }
 
 /* File uploader contrast */
