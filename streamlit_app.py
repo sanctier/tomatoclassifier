@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 import time
 
 import numpy as np
@@ -202,20 +203,16 @@ button[kind] *,
 # --- Paths ---
 ROOT_DIR = Path(__file__).resolve().parent
 MODEL_PATH = ROOT_DIR / "models" / "MobileNetV2_hypertuned_final.tflite"
-
-
-CLASS_NAMES = [
-    "Tomato___Bacterial_spot",
-    "Tomato___Late_blight",
-    "Tomato___Septoria_leaf_spot",
-    "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
-    "Tomato___healthy",
-]
+LABELS_PATH = ROOT_DIR / "models" / "labels.json"
 
 
 @st.cache_resource(show_spinner=False)
 def load_labels():
-    return CLASS_NAMES
+    if not LABELS_PATH.exists():
+        return []
+    with open(LABELS_PATH, "r", encoding="utf-8") as f:
+        label_map = json.load(f)
+    return [label_map[str(i)] for i in range(len(label_map))]
 
 
 @st.cache_resource(show_spinner=False)
