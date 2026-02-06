@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 import numpy as np
@@ -74,15 +73,20 @@ h1, h2, h3, h4 { color: var(--fg); }
 # --- Paths ---
 ROOT_DIR = Path(__file__).resolve().parent
 MODEL_PATH = ROOT_DIR / "models" / "MobileNetV2_hypertuned_final.tflite"
-DATASET_TRAIN_DIR = ROOT_DIR / "tomato_dataset" / "train"
+
+
+CLASS_NAMES = [
+    "Tomato___Bacterial_spot",
+    "Tomato___healthy",
+    "Tomato___Late_blight",
+    "Tomato___Septoria_leaf_spot",
+    "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+]
 
 
 @st.cache_resource(show_spinner=False)
 def load_labels():
-    if DATASET_TRAIN_DIR.exists():
-        class_names = sorted([d.name for d in DATASET_TRAIN_DIR.iterdir() if d.is_dir()])
-        return class_names
-    return []
+    return CLASS_NAMES
 
 
 @st.cache_resource(show_spinner=False)
@@ -125,7 +129,7 @@ st.caption("Upload a tomato leaf image and get predictions using your best TFLit
 with st.sidebar:
     st.markdown("## Model Settings")
     st.write(f"**Model:** {MODEL_PATH.name}")
-    st.write(f"**Labels source:** {DATASET_TRAIN_DIR}")
+    st.write("**Labels source:** Hardcoded")
     st.markdown("---")
     st.markdown("## Analysis Tools")
     show_top3 = st.checkbox("Show Top-3 predictions", value=True)
@@ -140,7 +144,7 @@ if interpreter is None:
     st.stop()
 
 if not labels:
-    st.error(f"No labels found in {DATASET_TRAIN_DIR}")
+    st.error("No labels configured in the app.")
     st.stop()
 
 
