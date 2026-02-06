@@ -165,6 +165,13 @@ button[kind] *,
     font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
+.prediction-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0;
+}
+
 .muted { color: var(--muted); }
 
 .kpi {
@@ -430,7 +437,7 @@ with col_right:
         top_conf = float(preds[top_idx])
 
         st.markdown(
-            f"<h3>Prediction: <span class='badge'>{format_label(top_label)}</span></h3>",
+            f"<h3 class='prediction-title'>Prediction: <span class='badge'>{format_label(top_label)}</span></h3>",
             unsafe_allow_html=True,
         )
         st.progress(min(max(top_conf, 0.0), 1.0))
