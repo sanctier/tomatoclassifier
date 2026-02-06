@@ -334,8 +334,11 @@ with col_right:
         st.write(f"**Confidence:** {top_conf:.4f}")
         st.caption(f"Inference time: {elapsed_ms:.1f} ms")
 
-        st.markdown(
-            """
+        detail_left, detail_right = st.columns(2)
+
+        with detail_left:
+            st.markdown(
+                """
 <div class="kpi">
     <div class="item">
         <div class="label">Model</div>
@@ -347,31 +350,32 @@ with col_right:
     </div>
 </div>
 """,
-            unsafe_allow_html=True,
-        )
+                unsafe_allow_html=True,
+            )
 
-        if show_top3:
-            st.markdown("#### Top-3 Predictions")
-            top3_idx = np.argsort(preds)[-3:][::-1]
-            for rank, idx in enumerate(top3_idx, start=1):
-                st.write(f"{rank}. {format_label(labels[idx])} — {preds[idx]:.4f}")
+            if show_top3:
+                st.markdown("#### Top-3 Predictions")
+                top3_idx = np.argsort(preds)[-3:][::-1]
+                for rank, idx in enumerate(top3_idx, start=1):
+                    st.write(f"{rank}. {format_label(labels[idx])} — {preds[idx]:.4f}")
 
-        if show_chart:
-            st.markdown("#### Confidence Chart")
-            order = np.argsort(preds)[::-1]
-            chart_labels = [format_label(labels[i]) for i in order]
-            chart_values = [float(preds[i]) for i in order]
-            chart_df = {
-                "Class": chart_labels,
-                "Confidence": chart_values,
-            }
-            st.bar_chart(chart_df, x="Class", y="Confidence")
+        with detail_right:
+            if show_chart:
+                st.markdown("#### Confidence Chart")
+                order = np.argsort(preds)[::-1]
+                chart_labels = [format_label(labels[i]) for i in order]
+                chart_values = [float(preds[i]) for i in order]
+                chart_df = {
+                    "Class": chart_labels,
+                    "Confidence": chart_values,
+                }
+                st.bar_chart(chart_df, x="Class", y="Confidence")
 
-        if show_meta:
-            st.markdown("#### Image Metadata")
-            st.write(f"**Size:** {image.size[0]} x {image.size[1]}")
-            st.write(f"**Mode:** {image.mode}")
-            st.write(f"**Format:** {image.format}")
+            if show_meta:
+                st.markdown("#### Image Metadata")
+                st.write(f"**Size:** {image.size[0]} x {image.size[1]}")
+                st.write(f"**Mode:** {image.mode}")
+                st.write(f"**Format:** {image.format}")
 
 
 
